@@ -35,3 +35,14 @@ SmartShield is an end-to-end machine learning based web application designed to 
 ---
 
 ## 📂 Project Structure
+credit_card_fraud_detection/
+│
+├── app.py
+├── model/
+│ └── fraud_model.pkl
+├── templates/
+│ └── index.html
+├── requirements.txt
+├── README.md
+└── dataset/
+└── fraudTrain.csv
