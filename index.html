@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Fraud Detection System</title>
+    <style>
+        /* --- CSS Reset & Variables --- */
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary-color: #64748b;
+            --accent-color: #0ea5e9;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --border-radius: 12px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --input-bg: #f8fafc;
+            --input-border: #e2e8f0;
+            --focus-ring: rgba(37, 99, 235, 0.25);
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text-main);
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+
+        /* --- Layout & Container --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            border-bottom: 1px solid var(--input-border);
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* --- Form Grid System --- */
+        form {
+            padding: 2rem;
+        }
+
+        fieldset {
+            border: 1px solid var(--input-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            background: #fff;
+            transition: box-shadow 0.3s ease;
+        }
+
+        fieldset:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--accent-color);
+        }
+
+        legend {
+            font-weight: 700;
+            color: var(--primary-dark);
+            padding: 0 0.75rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        legend::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            border-radius: 50%;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* --- Input Styling --- */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.4rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+            appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px var(--focus-ring);
+            transform: translateY(-1px);
+        }
+
+        input[readonly] {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            color: #64748b;
+        }
+
+        /* --- Buttons --- */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            padding-bottom: 2rem;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* --- Result Section (Flask) --- */
+        .result-wrapper {
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .prediction-box {
+            background: #fff;
+            border-left: 5px solid var(--secondary-color);
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            animation: fadeIn 0.5s ease;
+            display: none; /* Hidden by default */
+        }
+
+        .prediction-fraud { 
+            border-left-color: var(--danger); 
+            color: var(--danger); 
+            background-color: #fef2f2;
+        }
+        
+        .prediction-safe { 
+            border-left-color: var(--success); 
+            color: var(--success);
+            background-color: #ecfdf5;
+        }
+
+        /* --- Animations --- */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            fieldset {
+                padding: 1rem;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Credit Card Fraud Detection</h1>
+            <p>Advanced Machine Learning Analysis System</p>
+        </header>
+
+        <!-- RESULT SECTION -->
+        <!-- We check if prediction exists (is not none) to handle 0 or 1 correctly -->
+        {% if prediction is not none %}
+        <div class="result-wrapper">
+            <div class="prediction-box" style="display: block;">
+                <!-- Logic: Check if prediction is integer 1, string '1', or contains 'fraud' -->
+                {% if prediction == 1 or prediction == '1' or (prediction is string and 'fraud' in prediction|lower) %}
+                    <div class="prediction-fraud">
+                        &#9888; ALERT: {{ prediction }}
+                    </div>
+                {% else %}
+                    <div class="prediction-safe">
+                        &#10003; SAFE: {{ prediction }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <form action="/predict" method="post">
+            
+            <!-- SECTION 1: Transaction Details -->
+            <fieldset>
+                <legend>Transaction Details</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="amount">1. Transaction Amount</label>
+                        <input type="number" step="any" id="amount" name="amount" placeholder="e.g. 150.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unix_time">2. Transaction Time (Unix)</label>
+                        <input type="number" id="unix_time" name="unix_time" placeholder="e.g. 1325376000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_hour">3. Transaction Hour</label>
+                        <input type="number" id="trans_hour" name="trans_hour" placeholder="0-23" min="0" max="23">
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_day">4. Transaction Day</label>
+                        <input type="number" id="trans_day" name="trans_day" placeholder="1-31" min="1" max="31">
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_month">5. Transaction Month</label>
+                        <input type="number" id="trans_month" name="trans_month" placeholder="1-12" min="1" max="12">
+                    </div>
+                    <div class="form-group">
+                        <label for="weekend_flag">36. Weekend Transaction</label>
+                        <select id="weekend_flag" name="weekend_flag">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="night_flag">37. Night Transaction</label>
+                        <select id="night_flag" name="night_flag">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SECTION 2: Geolocation -->
+            <fieldset>
+                <legend>Geolocation Data</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="merch_lat">6. Merchant Latitude</label>
+                        <input type="number" step="any" id="merch_lat" name="merch_lat" placeholder="e.g. 40.7128">
+                    </div>
+                    <div class="form-group">
+                        <label for="merch_long">7. Merchant Longitude</label>
+                        <input type="number" step="any" id="merch_long" name="merch_long" placeholder="e.g. -74.0060">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_lat">8. Customer Latitude</label>
+                        <input type="number" step="any" id="cust_lat" name="cust_lat">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_long">9. Customer Longitude</label>
+                        <input type="number" step="any" id="cust_long" name="cust_long">
+                    </div>
+                    <div class="form-group">
+                        <label for="distance">10. Distance (Merc-Cust)</label>
+                        <input type="number" step="any" id="distance" name="distance" placeholder="km">
+                    </div>
+                    <div class="form-group">
+                        <label for="city_pop">11. City Population</label>
+                        <input type="number" step="any" id="city_pop" name="city_pop">
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_city">12. Transaction City</label>
+                        <input type="text" id="trans_city" name="trans_city" placeholder="e.g. New York">
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_state">13. Transaction State</label>
+                        <input type="text" id="trans_state" name="trans_state">
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_country">14. Transaction Country</label>
+                        <input type="text" id="trans_country" name="trans_country">
+                    </div>
+                    <div class="form-group">
+                        <label for="loc_change">44. Location Change Flag</label>
+                        <select id="loc_change" name="loc_change">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SECTION 3: Merchant Profile -->
+            <fieldset>
+                <legend>Merchant Profile</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="merch_cat">15. Merchant Category</label>
+                        <input type="text" id="merch_cat" name="merch_cat" placeholder="e.g. Electronics">
+                    </div>
+                    <div class="form-group">
+                        <label for="merch_risk">16. Merchant Risk Score</label>
+                        <input type="number" step="any" id="merch_risk" name="merch_risk" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="merch_count">17. Merch Trans Count</label>
+                        <input type="number" id="merch_count" name="merch_count">
+                    </div>
+                    <div class="form-group">
+                        <label for="merch_avg">18. Merch Avg Amount</label>
+                        <input type="number" step="any" id="merch_avg" name="merch_avg">
+                    </div>
+                    <div class="form-group">
+                        <label for="merch_fraud_hist">42. Merch Fraud History</label>
+                        <input type="number" id="merch_fraud_hist" name="merch_fraud_hist">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_merch_flag">46. New Merchant Flag</label>
+                        <select id="new_merch_flag" name="new_merch_flag">
+                            <option value="0">Existing</option>
+                            <option value="1">New</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SECTION 4: Customer Profile -->
+            <fieldset>
+                <legend>Customer Profile</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="cust_age">19. Customer Age</label>
+                        <input type="number" id="cust_age" name="cust_age" min="18" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_gender">20. Customer Gender</label>
+                        <select id="cust_gender" name="cust_gender">
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="O">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="card_type">21. Card Type</label>
+                        <select id="card_type" name="card_type">
+                            <option value="Credit">Credit</option>
+                            <option value="Debit">Debit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="account_age">39. Account Age (Days)</label>
+                        <input type="number" id="account_age" name="account_age">
+                    </div>
+                    <div class="form-group">
+                        <label for="credit_score">40. Credit Score</label>
+                        <input type="number" id="credit_score" name="credit_score" min="300" max="850">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_fraud_hist">43. Cust Fraud History</label>
+                        <input type="number" id="cust_fraud_hist" name="cust_fraud_hist">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SECTION 5: Device & Security -->
+            <fieldset>
+                <legend>Device & Security Context</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="card_present">22. Card Present Flag</label>
+                        <select id="card_present" name="card_present">
+                            <option value="0">No (Online/Phone)</option>
+                            <option value="1">Yes (Physical)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="online_flag">23. Online Transaction Flag</label>
+                        <select id="online_flag" name="online_flag">
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="intl_flag">24. International Transaction</label>
+                        <select id="intl_flag" name="intl_flag">
+                            <option value="0">Domestic</option>
+                            <option value="1">International</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="device_type">25. Device Type</label>
+                        <input type="text" id="device_type" name="device_type" placeholder="e.g. Mobile, Desktop">
+                    </div>
+                    <div class="form-group">
+                        <label for="browser_type">26. Browser Type</label>
+                        <input type="text" id="browser_type" name="browser_type" placeholder="e.g. Chrome, Safari">
+                    </div>
+                    <div class="form-group">
+                        <label for="ip_risk">27. IP Address Risk Score</label>
+                        <input type="number" step="any" id="ip_risk" name="ip_risk" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_device_flag">47. New Device Flag</label>
+                        <select id="new_device_flag" name="new_device_flag">
+                            <option value="0">Recognized</option>
+                            <option value="1">New</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SECTION 6: Behavioral Analytics -->
+            <fieldset>
+                <legend>Behavioral Analytics</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="freq_24h">28. Freq (Last 24 Hours)</label>
+                        <input type="number" id="freq_24h" name="freq_24h">
+                    </div>
+                    <div class="form-group">
+                        <label for="freq_7d">29. Freq (Last 7 Days)</label>
+                        <input type="number" id="freq_7d" name="freq_7d">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_avg_amt">30. Cust Avg Amount</label>
+                        <input type="number" step="any" id="cust_avg_amt" name="cust_avg_amt">
+                    </div>
+                    <div class="form-group">
+                        <label for="max_amt">31. Max Trans Amount</label>
+                        <input type="number" step="any" id="max_amt" name="max_amt">
+                    </div>
+                    <div class="form-group">
+                        <label for="min_amt">32. Min Trans Amount</label>
+                        <input type="number" step="any" id="min_amt" name="min_amt">
+                    </div>
+                    <div class="form-group">
+                        <label for="amt_deviation">33. Amount Deviation</label>
+                        <input type="number" step="any" id="amt_deviation" name="amt_deviation">
+                    </div>
+                    <div class="form-group">
+                        <label for="failed_count">34. Failed Trans Count</label>
+                        <input type="number" id="failed_count" name="failed_count">
+                    </div>
+                    <div class="form-group">
+                        <label for="success_count">35. Success Trans Count</label>
+                        <input type="number" id="success_count" name="success_count">
+                    </div>
+                    <div class="form-group">
+                        <label for="trans_velocity">38. Transaction Velocity</label>
+                        <input type="number" step="any" id="trans_velocity" name="trans_velocity">
+                    </div>
+                    <div class="form-group">
+                        <label for="prev_fraud_count">41. Previous Fraud Count</label>
+                        <input type="number" id="prev_fraud_count" name="prev_fraud_count">
+                    </div>
+                    <div class="form-group">
+                        <label for="amt_change_flag">45. Amount Change Flag</label>
+                        <select id="amt_change_flag" name="amt_change_flag">
+                            <option value="0">Normal</option>
+                            <option value="1">Unusual Spike</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SECTION 7: System & Prediction Target -->
+            <fieldset>
+                <legend>System Metrics</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="approval_status">48. Transaction Approval Status</label>
+                        <select id="approval_status" name="approval_status">
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Declined">Declined</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="risk_score">49. Calculated Risk Score</label>
+                        <input type="number" step="any" id="risk_score" name="risk_score" placeholder="0.0 to 1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="fraud_label">50. Fraud Label (Target)</label>
+                        <input type="number" id="fraud_label" name="fraud_label" readonly placeholder="Prediction Output" style="background-color: #f1f5f9; color: #94a3b8;">
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="btn-container">
+                <button type="submit">Analyze Transaction</button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // Simple UI interaction script
+        document.querySelector('form').addEventListener('submit', function() {
+            const btn = this.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Analyzing...';
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+            
+            // Fallback timeout if page doesn't reload quickly
+            setTimeout(() => {
+                if(btn.disabled) {
+                    btn.innerText = originalText;
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
